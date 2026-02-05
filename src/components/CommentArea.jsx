@@ -3,6 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import AddComment from "./AddComment";
 import Spinner from "react-bootstrap/Spinner";
 import CommentForm from "./CommentForm.jsx";
+import ErrorAlert from "./ErrorAlert.jsx";
 
 const commentURL = "https://striveschool-api.herokuapp.com/api/comments/";
 
@@ -12,9 +13,12 @@ class CommentArea extends Component {
     close: true,
     loading: true,
     showForm: false,
+    error: false,
+    errorOnDelete: false,
   };
 
   getComments = () => {
+    this.setState({ error: false, errorOnDelete: false });
     fetch(`${commentURL}${this.props.asin}`, {
       headers: {
         Authorization:
@@ -35,8 +39,8 @@ class CommentArea extends Component {
         });
         console.log(data);
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(() => {
+        this.setState({ error: true, loading: false });
       });
   };
   componentDidMount() {
@@ -59,8 +63,8 @@ class CommentArea extends Component {
           throw new Error("Errore nell'eliminazione del commento");
         }
       })
-      .catch((error) => {
-        console.log("ERRORE NELL'ELIMINAZIONE DEL COMMENTO", error);
+      .catch(() => {
+        this.setState({ errorOnDelete: true });
       });
   };
 
@@ -72,6 +76,8 @@ class CommentArea extends Component {
             <Modal.Title>Comments</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {this.state.error && <ErrorAlert text="Si è verificato un errore nel caricamento dei commenti." />}
+            {this.state.errorOnDelete && <ErrorAlert text="Si è verificato un errore nell'eliminazione del commento." />}
             {this.state.loading && (
               <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>
